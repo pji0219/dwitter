@@ -11,3 +11,7 @@ app.use(express.json());
 app.use(cors());
 app.use(helmet());
 app.use(morgan('tiny'));
+
+app.use('/tweets', tweetsRouter);
+
+app.listen(8080);

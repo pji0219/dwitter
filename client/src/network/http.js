@@ -8,20 +8,21 @@ export default class HttpClient {
       ...option,
       headers: {
         'Content-Type': 'application/json',
-        ...option.headers
-      }
+        ...option.headers,
+      },
     });
 
     let data;
     try {
       data = await res.json();
     } catch (err) {
-      console.error(error);
+      console.error(err);
     }
 
     if (res.status > 299 || res.status < 200) {
       const message =
-      data && data.message ? data.message : 'something went wrong'
+        data && data.message ? data.message : 'something went wrong';
+      throw new Error(message);
     }
     return data;
   }
