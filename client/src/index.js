@@ -8,12 +8,23 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AuthErrorEventBus } from './context/AuthContext';
 import HttpClient from './network/http';
+import TokenStorage from './db/token';
+import { io } from 'socket.io-client';
 
 const baseURL = process.env.REACT_APP_BASE_URL;
-const httpClient = new HttpClient(baseURL);
+const tokenStorage = new TokenStorage();
 const authErrorEventBus = new AuthErrorEventBus();
-const authService = new AuthService();
-const tweetService = new TweetService(httpClient);
+const httpClient = new HttpClient(baseURL, authErrorEventBus);
+const authService = new AuthService(httpClient, tokenStorage);
+const tweetService = new TweetService(httpClient, tokenStorage);
+const socketIO = io(baseURL);
+
+socketIO.on('connect_error', (error) => {
+  console.log('socket error', error);
+});
+
+// 클라이언트가 서버로부터 듣고자 하는 카테고리가 발생하면 메세지 전달 받아서 출력
+socketIO.on('dwitter', (message) => console.log(message));
 
 ReactDOM.render(
   <React.StrictMode>
