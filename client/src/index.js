@@ -9,22 +9,16 @@ import { AuthProvider } from './context/AuthContext';
 import { AuthErrorEventBus } from './context/AuthContext';
 import HttpClient from './network/http';
 import TokenStorage from './db/token';
-import { io } from 'socket.io-client';
+import Socket from './network/socket';
 
 const baseURL = process.env.REACT_APP_BASE_URL;
 const tokenStorage = new TokenStorage();
 const authErrorEventBus = new AuthErrorEventBus();
 const httpClient = new HttpClient(baseURL, authErrorEventBus);
+// 소켓에서는 토큰을 읽기만 하므로 다른건 필요하지 않아서 콜백함수로 getToken()만 전달
+const socketClient = new Socket(baseURL, () => tokenStorage.getToken());
 const authService = new AuthService(httpClient, tokenStorage);
-const tweetService = new TweetService(httpClient, tokenStorage);
-const socketIO = io(baseURL);
-
-socketIO.on('connect_error', (error) => {
-  console.log('socket error', error);
-});
-
-// 클라이언트가 서버로부터 듣고자 하는 카테고리가 발생하면 메세지 전달 받아서 출력
-socketIO.on('dwitter', (message) => console.log(message));
+const tweetService = new TweetService(httpClient, tokenStorage, socketClient);
 
 ReactDOM.render(
   <React.StrictMode>

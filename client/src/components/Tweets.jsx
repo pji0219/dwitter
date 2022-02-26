@@ -16,6 +16,13 @@ const Tweets = memo(({ tweetService, username, addable }) => {
       .getTweets(username)
       .then((tweets) => setTweets([...tweets]))
       .catch(onError);
+
+    /* 
+        새로운 트윗이 생기면 onSync라는 함수를 통해서 새로운 트윗을 만듦(다른 클라이언트에서 만든 트윗이나 내가 만든 트윗이 
+        생기면 소켓을 이용해서  실시간으로 렌더링 해줌)
+      */
+    const stopSync = tweetService.onSync((tweet) => onCreated(tweet));
+    return () => stopSync(); // 그리고 컴포넌트가 언마운트될 때는 더이상 새로운 트윗이 생기는지 듣고 싶지 않으므로 콜백함수를 호출해준다.
   }, [tweetService, username, user]);
 
   const onCreated = (tweet) => {
@@ -59,8 +66,8 @@ const Tweets = memo(({ tweetService, username, addable }) => {
         />
       )}
       {error && <Banner text={error} isAlert={true} transient={true} />}
-      {tweets.length === 0 && <p className='tweets-empty'>No Tweets Yet</p>}
-      <ul className='tweets'>
+      {tweets.length === 0 && <p className="tweets-empty">No Tweets Yet</p>}
+      <ul className="tweets">
         {tweets.map((tweet) => (
           <TweetCard
             key={tweet.id}

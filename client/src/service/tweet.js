@@ -1,7 +1,8 @@
 export default class TweetService {
-  constructor(http, tokenStorage) {
+  constructor(http, tokenStorage, socket) {
     this.http = http;
     this.tokenStorage = tokenStorage;
+    this.socket = socket;
   }
 
   async getTweets(username) {
@@ -40,5 +41,12 @@ export default class TweetService {
     return {
       Authorization: `Bearer ${token}`,
     };
+  }
+
+  /* 
+    소켓을 사용하고 싶은 사람이 새로운 트윗이 생겼을 때 하고 싶은 일은 콜백으로 전달 해주면 된다.
+  */
+  onSync(callback) {
+    return this.socket.onSync('tweets', callback);
   }
 }

@@ -1,3 +1,4 @@
+import { getSocketIO } from '../connection/socket.js';
 import * as tweetRepository from '../data/tweets.js';
 
 export async function getTweets(req, res) {
@@ -23,6 +24,9 @@ export async function createTweet(req, res, next) {
   const { text } = req.body;
   const tweet = await tweetRepository.create(text, req.userId);
   res.status(201).json(tweet);
+
+  // 만들어진 트윗이 tweets 카테고리에 연결된 클라이언트들에게 실시간으로 보여짐
+  getSocketIO().emit('tweets', tweet);
 }
 
 export async function updateTweet(req, res) {
