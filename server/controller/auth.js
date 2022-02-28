@@ -24,8 +24,9 @@ export async function signup(req, res) {
     url,
   });
 
-  // 토큰 만들어서 클라이언트에게 username하고 같이 전달, 토큰: { id }, jwtSecretKey, { expiresIn: jwtExpiresInDays }
+  // 토큰 만들어서 클라이언트에게 username하고 같이 전달
   const token = createJwtToken(userId); // 사용자의 고유한 id를 이용해서 위와 같이 토큰을 만듦, createJwtToken 함수는 맨아래에서 두번째에 있음
+  setToken(res, token); // 헤더의 토큰을 쿠키에 저장 하기 위함
   res.status(201).json({ token, username }); // 클라이언트에게 토큰과 username을 같이 전달
 }
 
@@ -34,6 +35,7 @@ export async function login(req, res) {
 
   // 해당 아이디(유저네임)가 있는지 확인
   const user = await userRepository.findByUsername(username);
+
   if (!user) {
     return res.status(401).json({ message: 'Invalid user or password' });
   }
@@ -46,6 +48,7 @@ export async function login(req, res) {
 
   // 로그인 된 유저의 id를 이용해서 토큰을 만들고 클라이언트에게 토큰과 유저네임을 전달
   const token = createJwtToken(user.id);
+  setToken(res, token);
   res.status(200).json({ token, username });
 }
 
@@ -56,7 +59,19 @@ function createJwtToken(id) {
   });
 }
 
-// 이건 그냥 토큰이 유효한지 테스트용인거 같음 (유저가 있는지)
+// 헤더의 토큰을 쿠키에 저장 하기 위함
+function setToken(res, token) {
+  const option = {
+    maxAge: config.jwt.expiresInSec * 1000, // 유효기간
+    httpOnly: true,
+    sameSite: 'none', // 같은 도메인이 아니어도 됨
+    secure: true,
+  };
+
+  res.cookie('token', token, option);
+}
+
+// 이건 그냥 토큰이 유효한지 테스트용인거 같음 (유저가 있는지), 아닐수도 있음
 export async function me(req, res, next) {
   const user = await userRepository.findById(req.userId);
   if (!user) {

@@ -1,31 +1,26 @@
-let users = [
-  {
-    id: '1',
-    username: 'bob',
-    password: '$2b$12$G9xf8SFq3oTEgdj7ozHQ/uhDOyeQcUEDU8tnOcvpvApuadr3nE5Vm',
-    name: 'Bob',
-    email: 'bob@gmail.com',
-    url: 'https://widgetwhats.com/app/uploads/2019/11/free-profile-photo-whatsapp-1.png',
-  },
-  {
-    id: '2',
-    username: 'park',
-    password: '$2b$12$G9xf8SFq3oTEgdj7ozHQ/uhDOyeQcUEDU8tnOcvpvApuadr3nE5Vm',
-    name: 'park',
-    email: 'park@gmail.com',
-  },
-];
+import Mongoose from 'mongoose';
+import { useVirtualId } from '../database/database.js';
+
+const userSchema = new Mongoose.Schema({
+  username: { type: String, required: true },
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  password: { type: String, required: true },
+  url: String,
+});
+
+// _id -> id, 가상의 id라는 키를 추가해서 데이터베이스를 읽어 올때는 그것으로 적용
+useVirtualId(userSchema);
+const User = Mongoose.model('User', userSchema); // User 컬렉션을 userSchema와 연결
 
 export async function findByUsername(username) {
-  return users.find((user) => user.username === username);
+  return User.findOne({ username });
 }
 
 export async function findById(id) {
-  return users.find((user) => user.id === id);
+  return User.findById(id);
 }
 
 export async function createUser(user) {
-  const created = { ...user, id: Date.now().toString() };
-  users.push(created);
-  return created.id;
+  return new User(user).save().then((data) => data.id);
 }

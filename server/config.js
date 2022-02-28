@@ -24,6 +24,12 @@ export const config = {
   host: {
     port: parseInt(required('HOST_PORT', 8080)),
   },
+  db: {
+    host: required('DB_HOST'),
+  },
+  cors: {
+    allowedOrign: required('CORS_ALLOW_ORIGN'),
+  },
 };
 
 // 기존 코드
